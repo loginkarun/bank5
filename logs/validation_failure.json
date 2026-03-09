@@ -1,0 +1,1 @@
+{"status":"validation_failed","error":"Missing .github/workflows/build.yml","fix_workflow_triggered":true,"fix_workflow_execution_id":"f5819888-239b-45b9-8b66-a5698efbe9c3","api_url":"https://int-ai.aava.ai/workflows/workflow-executions/f5819888-239b-45b9-8b66-a5698efbe9c3","repo":"bank5","branch":"main","timestamp":"2024-01-01T00:00:00Z"}
