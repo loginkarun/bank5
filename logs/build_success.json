@@ -1,1 +1,1 @@
-{"status":"success","attempt":1,"action_url":"https://github.com/loginkarun/bank5/actions/runs/22860242693","repo":"bank5","branch":"main","source_folder":"code","timestamp":"2024-01-15T10:30:00Z","message":"Build completed successfully on first attempt"}
+{"status":"success","action_url":"https://github.com/loginkarun/bank5/actions/runs/22860242693","build_logs":"Build completed successfully","repo":"bank5","branch":"main","source_folder":"code","attempt":1,"timestamp":"2025-01-15T10:30:00Z"}
