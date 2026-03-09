@@ -1,10 +1,10 @@
 {
-  "id": "shopping-cart-env",
+  "id": "bank5-cart-api-environment",
   "name": "Shopping Cart API Environment",
   "values": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080/api",
+      "value": "http://localhost:8080",
       "type": "default",
       "enabled": true
     },
@@ -21,32 +21,16 @@
       "enabled": true
     },
     {
-      "key": "productId1",
-      "value": "",
+      "key": "productId",
+      "value": "550e8400-e29b-41d4-a716-446655440000",
       "type": "default",
-      "enabled": true,
-      "description": "First product ID from database (Wireless Mouse)"
-    },
-    {
-      "key": "productId2",
-      "value": "",
-      "type": "default",
-      "enabled": true,
-      "description": "Second product ID from database (Mechanical Keyboard)"
-    },
-    {
-      "key": "productId3",
-      "value": "",
-      "type": "default",
-      "enabled": true,
-      "description": "Third product ID from database (USB-C Cable)"
+      "enabled": true
     },
     {
       "key": "cartId",
       "value": "",
       "type": "default",
-      "enabled": true,
-      "description": "Cart ID set dynamically during test execution"
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment",
