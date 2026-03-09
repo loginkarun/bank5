@@ -1,0 +1,55 @@
+{
+  "id": "shopping-cart-env",
+  "name": "Shopping Cart API Environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "username",
+      "value": "testuser",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "password",
+      "value": "password",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "productId1",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "First product ID from database (Wireless Mouse)"
+    },
+    {
+      "key": "productId2",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Second product ID from database (Mechanical Keyboard)"
+    },
+    {
+      "key": "productId3",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Third product ID from database (USB-C Cable)"
+    },
+    {
+      "key": "cartId",
+      "value": "",
+      "type": "default",
+      "enabled": true,
+      "description": "Cart ID set dynamically during test execution"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2024-01-15T10:00:00.000Z",
+  "_postman_exported_using": "Postman/10.0.0"
+}
