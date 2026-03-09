@@ -12,13 +12,13 @@ servers:
   - url: https://staging-api.bank5.com
     description: Staging server
 tags:
-  - name: Cart
-    description: Shopping cart operations
+  - name: Shopping Cart
+    description: Operations related to shopping cart management
 paths:
   /api/cart/add:
     post:
       tags:
-        - Cart
+        - Shopping Cart
       summary: Add item to cart
       description: Adds a product to the shopping cart. If the product already exists in the cart, increments the quantity.
       operationId: SCRUM-11692_addItemToCart_post
@@ -31,20 +31,20 @@ paths:
             schema:
               $ref: '#/components/schemas/CartItemAddRequest'
       responses:
-        '200':
+        '201':
           description: Item successfully added to cart
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CartResponse'
         '400':
-          description: Bad request - validation error
+          description: Validation error - Invalid request data
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized - invalid or missing token
+          description: Unauthorized - Invalid or missing authentication token
           content:
             application/json:
               schema:
@@ -56,7 +56,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
-          description: Conflict - product out of stock
+          description: Out of stock - Requested quantity exceeds available stock
           content:
             application/json:
               schema:
@@ -70,9 +70,9 @@ paths:
   /api/cart:
     get:
       tags:
-        - Cart
+        - Shopping Cart
       summary: Get cart
-      description: Retrieves the current user's shopping cart with all items and total price
+      description: Retrieves the current user's shopping cart with all items, quantities, and total price.
       operationId: SCRUM-11692_getCart_get
       security:
         - bearerAuth: []
@@ -84,13 +84,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/CartResponse'
         '401':
-          description: Unauthorized - invalid or missing token
+          description: Unauthorized - Invalid or missing authentication token
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Cart not found
+          description: Cart not found for user
           content:
             application/json:
               schema:
@@ -104,9 +104,9 @@ paths:
   /api/cart/{productId}:
     delete:
       tags:
-        - Cart
+        - Shopping Cart
       summary: Remove item from cart
-      description: Removes a specific product from the shopping cart
+      description: Removes a specific product from the shopping cart by product ID.
       operationId: SCRUM-11692_removeItemFromCart_delete
       security:
         - bearerAuth: []
@@ -114,7 +114,7 @@ paths:
         - name: productId
           in: path
           required: true
-          description: The unique identifier of the product to remove
+          description: Unique identifier of the product to remove from cart
           schema:
             type: string
             format: uuid
@@ -126,7 +126,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/CartResponse'
         '401':
-          description: Unauthorized - invalid or missing token
+          description: Unauthorized - Invalid or missing authentication token
           content:
             application/json:
               schema:
@@ -145,9 +145,9 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
     put:
       tags:
-        - Cart
+        - Shopping Cart
       summary: Update item quantity
-      description: Updates the quantity of a specific product in the shopping cart
+      description: Updates the quantity of a specific product in the shopping cart.
       operationId: SCRUM-11692_updateItemQuantity_put
       security:
         - bearerAuth: []
@@ -155,7 +155,7 @@ paths:
         - name: productId
           in: path
           required: true
-          description: The unique identifier of the product to update
+          description: Unique identifier of the product to update
           schema:
             type: string
             format: uuid
@@ -173,13 +173,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/CartResponse'
         '400':
-          description: Bad request - validation error
+          description: Validation error - Invalid quantity
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
-          description: Unauthorized - invalid or missing token
+          description: Unauthorized - Invalid or missing authentication token
           content:
             application/json:
               schema:
@@ -191,7 +191,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
-          description: Conflict - requested quantity exceeds available stock
+          description: Out of stock - Requested quantity exceeds available stock
           content:
             application/json:
               schema:
@@ -208,7 +208,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT token-based authentication
+      description: JWT token for authentication. All cart endpoints require authentication.
   schemas:
     CartItemAddRequest:
       type: object
@@ -219,14 +219,14 @@ components:
         productId:
           type: string
           format: uuid
-          description: Unique identifier of the product to add
+          description: Unique identifier of the product to add to cart
           example: "550e8400-e29b-41d4-a716-446655440000"
         quantity:
           type: integer
           minimum: 1
-          maximum: 100
-          description: Quantity of the product to add
+          description: Quantity of the product to add (must be greater than 0 and not exceed available stock)
           example: 2
+      description: Request body for adding an item to the shopping cart
     CartItemUpdateRequest:
       type: object
       required:
@@ -235,9 +235,9 @@ components:
         quantity:
           type: integer
           minimum: 1
-          maximum: 100
-          description: New quantity for the product
+          description: New quantity for the cart item (must be greater than 0 and not exceed available stock)
           example: 5
+      description: Request body for updating the quantity of an item in the cart
     CartResponse:
       type: object
       properties:
@@ -250,23 +250,22 @@ components:
           type: string
           format: uuid
           description: Unique identifier of the user who owns the cart
-          example: "789e0123-e89b-12d3-a456-426614174999"
+          example: "987e6543-e21b-12d3-a456-426614174999"
         items:
           type: array
-          description: List of items in the cart
+          description: List of items in the shopping cart
           items:
             $ref: '#/components/schemas/CartItem'
         totalPrice:
           type: number
           format: decimal
-          minimum: 0
           description: Total price of all items in the cart
           example: 299.98
         itemCount:
           type: integer
-          minimum: 0
           description: Total number of items in the cart
           example: 3
+      description: Response containing cart details with all items and total price
     CartItem:
       type: object
       properties:
@@ -274,7 +273,7 @@ components:
           type: string
           format: uuid
           description: Unique identifier of the cart item
-          example: "456e7890-e89b-12d3-a456-426614174111"
+          example: "456e7890-e12b-34d5-a678-426614174111"
         productId:
           type: string
           format: uuid
@@ -284,23 +283,22 @@ components:
           type: string
           description: Name of the product
           example: "Wireless Mouse"
-        price:
-          type: number
-          format: decimal
-          minimum: 0
-          description: Price per unit of the product
-          example: 49.99
         quantity:
           type: integer
           minimum: 1
-          description: Quantity of the product in the cart
+          description: Quantity of this product in the cart
           example: 2
+        price:
+          type: number
+          format: decimal
+          description: Unit price of the product
+          example: 49.99
         subtotal:
           type: number
           format: decimal
-          minimum: 0
-          description: Subtotal for this cart item (price * quantity)
+          description: Subtotal for this cart item (quantity * price)
           example: 99.98
+      description: Individual item in the shopping cart
     ErrorResponse:
       type: object
       properties:
@@ -323,17 +321,19 @@ components:
           example: "Product not found"
         details:
           type: array
-          description: Additional error details
+          description: Detailed error information for validation failures
           items:
             $ref: '#/components/schemas/ErrorDetail'
+      description: Standard error response structure
     ErrorDetail:
       type: object
       properties:
         field:
           type: string
           description: Field name that caused the error
-          example: "productId"
+          example: "quantity"
         issue:
           type: string
-          description: Description of the issue
-          example: "Product with given ID does not exist"
+          description: Description of the validation issue
+          example: "Invalid quantity/Out of stock"
+      description: Detailed validation error information
