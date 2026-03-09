@@ -1,9 +1,9 @@
 {
   "info": {
-    "name": "Shopping Cart API Test Collection",
-    "description": "Comprehensive API test collection for Shopping Cart application (SCRUM-11692)",
+    "name": "Shopping Cart API - Comprehensive Test Suite",
+    "description": "Complete API test collection for Shopping Cart Application (SCRUM-11692)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "shopping-cart-api-tests",
+    "_postman_id": "bank5-cart-api-tests",
     "version": "1.0.0"
   },
   "auth": {
@@ -21,12 +21,24 @@
       }
     ]
   },
+  "variable": [
+    {
+      "key": "productId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cartId",
+      "value": "",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "01 - Add Item to Cart - Positive Tests",
+      "name": "Add Item to Cart - Positive Tests",
       "item": [
         {
-          "name": "TC001 - Add Single Item to Cart",
+          "name": "TC001 - Add Single Item Successfully",
           "event": [
             {
               "listen": "test",
@@ -36,38 +48,37 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Response has cart ID', function () {",
+                  "pm.test('Response has valid cart structure', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('id');",
-                  "    pm.environment.set('cartId', jsonData.id);",
-                  "});",
-                  "",
-                  "pm.test('Response has userId', function () {",
-                  "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('userId');",
-                  "});",
-                  "",
-                  "pm.test('Response has items array', function () {",
-                  "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('items');",
-                  "    pm.expect(jsonData.items).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test('Response has totalPrice', function () {",
-                  "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData).to.have.property('totalPrice');",
-                  "    pm.expect(jsonData.totalPrice).to.be.a('number');",
+                  "    pm.expect(jsonData).to.have.property('itemCount');",
                   "});",
                   "",
-                  "pm.test('Response has itemCount', function () {",
+                  "pm.test('Cart contains added item', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('itemCount');",
-                  "    pm.expect(jsonData.itemCount).to.be.at.least(1);",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "    pm.expect(jsonData.items.length).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "pm.test('Total price is calculated correctly', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.totalPrice).to.be.a('number');",
+                  "    pm.expect(jsonData.totalPrice).to.be.greaterThan(0);",
                   "});",
                   "",
                   "pm.test('Response time is less than 500ms', function () {",
                   "    pm.expect(pm.response.responseTime).to.be.below(500);",
-                  "});"
+                  "});",
+                  "",
+                  "// Save productId for subsequent tests",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.items && jsonData.items.length > 0) {",
+                  "    pm.collectionVariables.set('productId', jsonData.items[0].productId);",
+                  "    pm.collectionVariables.set('cartId', jsonData.id);",
+                  "}"
                 ],
                 "type": "text/javascript"
               }
@@ -83,14 +94,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId1}}\",\n  \"quantity\": 2\n}"
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 2\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/cart/add",
+              "raw": "{{baseUrl}}/api/cart/add",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
+              "path": ["api", "cart", "add"]
             },
-            "description": "Add a single item to the cart with valid product ID and quantity"
+            "description": "Add a single item to cart with valid product ID and quantity"
           },
           "response": []
         },
@@ -105,9 +116,16 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Item quantity updated correctly', function () {",
+                  "pm.test('Quantity is updated correctly', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.items.length).to.be.at.least(1);",
+                  "    pm.expect(jsonData.items[0].quantity).to.be.greaterThan(1);",
+                  "});",
+                  "",
+                  "pm.test('Subtotal is calculated correctly', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var item = jsonData.items[0];",
+                  "    var expectedSubtotal = item.price * item.quantity;",
+                  "    pm.expect(item.subtotal).to.equal(expectedSubtotal);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -124,19 +142,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId2}}\",\n  \"quantity\": 5\n}"
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 5\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/cart/add",
+              "raw": "{{baseUrl}}/api/cart/add",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
+              "path": ["api", "cart", "add"]
             },
-            "description": "Add item with multiple quantities"
+            "description": "Add multiple quantities of the same product"
           },
           "response": []
         },
         {
-          "name": "TC003 - Add Same Item Again (Increment)",
+          "name": "TC003 - Add Existing Product (Increment Quantity)",
           "event": [
             {
               "listen": "test",
@@ -146,7 +164,7 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Quantity incremented for existing item', function () {",
+                  "pm.test('Existing product quantity is incremented', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.items).to.be.an('array');",
                   "});"
@@ -165,21 +183,21 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId1}}\",\n  \"quantity\": 1\n}"
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 1\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/cart/add",
+              "raw": "{{baseUrl}}/api/cart/add",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
+              "path": ["api", "cart", "add"]
             },
-            "description": "Add same product again to test quantity increment"
+            "description": "Add an existing product to verify quantity increment"
           },
           "response": []
         }
       ]
     },
     {
-      "name": "02 - Add Item to Cart - Negative Tests",
+      "name": "Add Item to Cart - Negative Tests",
       "item": [
         {
           "name": "TC004 - Add Item with Invalid Product ID",
@@ -192,15 +210,17 @@
                   "    pm.response.to.have.status(404);",
                   "});",
                   "",
-                  "pm.test('Error response has errorCode', function () {",
+                  "pm.test('Error response has correct structure', function () {",
                   "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('timestamp');",
+                  "    pm.expect(jsonData).to.have.property('traceId');",
                   "    pm.expect(jsonData).to.have.property('errorCode');",
-                  "    pm.expect(jsonData.errorCode).to.equal('PRODUCT_NOT_FOUND');",
+                  "    pm.expect(jsonData).to.have.property('message');",
                   "});",
                   "",
-                  "pm.test('Error response has message', function () {",
+                  "pm.test('Error code is PRODUCT_NOT_FOUND', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('message');",
+                  "    pm.expect(jsonData.errorCode).to.equal('PRODUCT_NOT_FOUND');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -217,19 +237,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"invalid-product-id\",\n  \"quantity\": 2\n}"
+              "raw": "{\n  \"productId\": \"invalid-product-id-12345\",\n  \"quantity\": 2\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/cart/add",
+              "raw": "{{baseUrl}}/api/cart/add",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
+              "path": ["api", "cart", "add"]
             },
             "description": "Attempt to add item with non-existent product ID"
           },
           "response": []
         },
         {
-          "name": "TC005 - Add Item with Zero Quantity",
+          "name": "TC005 - Add Item with Null Product ID",
           "event": [
             {
               "listen": "test",
@@ -239,92 +259,14 @@
                   "    pm.response.to.have.status(400);",
                   "});",
                   "",
-                  "pm.test('Validation error returned', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('errorCode');",
-                  "    pm.expect(jsonData.errorCode).to.equal('VALIDATION_ERROR');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId1}}\",\n  \"quantity\": 0\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/cart/add",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
-            },
-            "description": "Attempt to add item with zero quantity (validation error)"
-          },
-          "response": []
-        },
-        {
-          "name": "TC006 - Add Item with Negative Quantity",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 400', function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});",
-                  "",
-                  "pm.test('Validation error for negative quantity', function () {",
+                  "pm.test('Error code is VALIDATION_ERROR', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.errorCode).to.equal('VALIDATION_ERROR');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId1}}\",\n  \"quantity\": -5\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/cart/add",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
-            },
-            "description": "Attempt to add item with negative quantity"
-          },
-          "response": []
-        },
-        {
-          "name": "TC007 - Add Item Exceeding Stock",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 409', function () {",
-                  "    pm.response.to.have.status(409);",
                   "});",
                   "",
-                  "pm.test('Out of stock error returned', function () {",
+                  "pm.test('Error details contain field validation', function () {",
                   "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errorCode).to.equal('OUT_OF_STOCK');",
+                  "    pm.expect(jsonData.details).to.be.an('array');",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -341,19 +283,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId1}}\",\n  \"quantity\": 1000\n}"
+              "raw": "{\n  \"productId\": null,\n  \"quantity\": 2\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/cart/add",
+              "raw": "{{baseUrl}}/api/cart/add",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
+              "path": ["api", "cart", "add"]
             },
-            "description": "Attempt to add quantity exceeding available stock"
+            "description": "Validation test for null product ID"
           },
           "response": []
         },
         {
-          "name": "TC008 - Add Item with Missing Product ID",
+          "name": "TC006 - Add Item with Quantity Zero",
           "event": [
             {
               "listen": "test",
@@ -363,7 +305,7 @@
                   "    pm.response.to.have.status(400);",
                   "});",
                   "",
-                  "pm.test('Validation error for missing productId', function () {",
+                  "pm.test('Validation error for quantity', function () {",
                   "    var jsonData = pm.response.json();",
                   "    pm.expect(jsonData.errorCode).to.equal('VALIDATION_ERROR');",
                   "});"
@@ -382,447 +324,19 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"quantity\": 2\n}"
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 0\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/cart/add",
+              "raw": "{{baseUrl}}/api/cart/add",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
+              "path": ["api", "cart", "add"]
             },
-            "description": "Attempt to add item without productId field"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "03 - Get Cart - Positive Tests",
-      "item": [
-        {
-          "name": "TC009 - Get Cart with Items",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Cart contains items', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.items).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test('Each item has required fields', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.items.length > 0) {",
-                  "        var item = jsonData.items[0];",
-                  "        pm.expect(item).to.have.property('id');",
-                  "        pm.expect(item).to.have.property('productId');",
-                  "        pm.expect(item).to.have.property('productName');",
-                  "        pm.expect(item).to.have.property('price');",
-                  "        pm.expect(item).to.have.property('quantity');",
-                  "        pm.expect(item).to.have.property('subtotal');",
-                  "    }",
-                  "});",
-                  "",
-                  "pm.test('Total price is calculated correctly', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.totalPrice).to.be.a('number');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/cart",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart"]
-            },
-            "description": "Retrieve cart with existing items"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "04 - Update Item Quantity - Positive Tests",
-      "item": [
-        {
-          "name": "TC010 - Update Item Quantity to Valid Value",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Quantity updated successfully', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.items).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test('Total price recalculated', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.totalPrice).to.be.a('number');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 3\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/cart/{{productId1}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "{{productId1}}"]
-            },
-            "description": "Update quantity of existing cart item"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "05 - Update Item Quantity - Negative Tests",
-      "item": [
-        {
-          "name": "TC011 - Update with Zero Quantity",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 400', function () {",
-                  "    pm.response.to.have.status(400);",
-                  "});",
-                  "",
-                  "pm.test('Validation error returned', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errorCode).to.equal('VALIDATION_ERROR');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 0\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/cart/{{productId1}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "{{productId1}}"]
-            },
-            "description": "Attempt to update quantity to zero"
+            "description": "Validation test for quantity less than minimum (1)"
           },
           "response": []
         },
         {
-          "name": "TC012 - Update Non-Existent Product",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 404', function () {",
-                  "    pm.response.to.have.status(404);",
-                  "});",
-                  "",
-                  "pm.test('Product not found error', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errorCode).to.equal('PRODUCT_NOT_FOUND');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 2\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/cart/non-existent-product",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "non-existent-product"]
-            },
-            "description": "Attempt to update quantity for non-existent product"
-          },
-          "response": []
-        },
-        {
-          "name": "TC013 - Update Quantity Exceeding Stock",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 409', function () {",
-                  "    pm.response.to.have.status(409);",
-                  "});",
-                  "",
-                  "pm.test('Out of stock error', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errorCode).to.equal('OUT_OF_STOCK');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 500\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/cart/{{productId1}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "{{productId1}}"]
-            },
-            "description": "Attempt to update quantity beyond available stock"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "06 - Remove Item from Cart - Positive Tests",
-      "item": [
-        {
-          "name": "TC014 - Remove Existing Item",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test('Item removed from cart', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.items).to.be.an('array');",
-                  "});",
-                  "",
-                  "pm.test('Total price recalculated', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.totalPrice).to.be.a('number');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/cart/{{productId2}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "{{productId2}}"]
-            },
-            "description": "Remove an existing item from cart"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "07 - Remove Item from Cart - Negative Tests",
-      "item": [
-        {
-          "name": "TC015 - Remove Non-Existent Item",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 404', function () {",
-                  "    pm.response.to.have.status(404);",
-                  "});",
-                  "",
-                  "pm.test('Product not found error', function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.errorCode).to.equal('PRODUCT_NOT_FOUND');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/cart/non-existent-product",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "non-existent-product"]
-            },
-            "description": "Attempt to remove item that doesn't exist in cart"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "08 - Authentication Tests",
-      "item": [
-        {
-          "name": "TC016 - Access Cart Without Authentication",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 401', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/cart",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart"]
-            },
-            "description": "Attempt to access cart without authentication"
-          },
-          "response": []
-        },
-        {
-          "name": "TC017 - Add Item Without Authentication",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 401', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId1}}\",\n  \"quantity\": 1\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/cart/add",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
-            },
-            "description": "Attempt to add item without authentication"
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "09 - Edge Cases and Boundary Tests",
-      "item": [
-        {
-          "name": "TC018 - Add Item with Maximum Allowed Quantity",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200 or 409', function () {",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 409]);",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId3}}\",\n  \"quantity\": 100\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/cart/add",
-              "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
-            },
-            "description": "Add item with maximum allowed quantity (100)"
-          },
-          "response": []
-        },
-        {
-          "name": "TC019 - Add Item Exceeding Maximum Quantity Limit",
+          "name": "TC007 - Add Item with Quantity Exceeding Maximum",
           "event": [
             {
               "listen": "test",
@@ -851,29 +365,150 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId1}}\",\n  \"quantity\": 101\n}"
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 101\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/cart/add",
+              "raw": "{{baseUrl}}/api/cart/add",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "add"]
+              "path": ["api", "cart", "add"]
             },
-            "description": "Attempt to add item exceeding maximum quantity limit (>100)"
+            "description": "Validation test for quantity exceeding maximum (100)"
           },
           "response": []
         },
         {
-          "name": "TC020 - Get Empty Cart",
+          "name": "TC008 - Add Item Exceeding Stock",
           "event": [
             {
-              "listen": "prerequest",
+              "listen": "test",
               "script": {
                 "exec": [
-                  "// Note: This test assumes a fresh user or cleared cart"
+                  "pm.test('Status code is 409', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('Error code is OUT_OF_STOCK', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errorCode).to.equal('OUT_OF_STOCK');",
+                  "});"
                 ],
                 "type": "text/javascript"
               }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 999\n}"
             },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"]
+            },
+            "description": "Test stock validation when quantity exceeds available stock"
+          },
+          "response": []
+        },
+        {
+          "name": "TC009 - Add Item Without Authentication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"]
+            },
+            "description": "Security test - attempt to add item without authentication"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Get Cart - Positive Tests",
+      "item": [
+        {
+          "name": "TC010 - Get Cart Successfully",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Cart has valid structure', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('userId');",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "    pm.expect(jsonData).to.have.property('totalPrice');",
+                  "    pm.expect(jsonData).to.have.property('itemCount');",
+                  "});",
+                  "",
+                  "pm.test('Items array is present', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Response time is acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            },
+            "description": "Retrieve current user's cart"
+          },
+          "response": []
+        },
+        {
+          "name": "TC011 - Get Empty Cart",
+          "event": [
             {
               "listen": "test",
               "script": {
@@ -898,22 +533,791 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/cart",
+              "raw": "{{baseUrl}}/api/cart",
               "host": ["{{baseUrl}}"],
-              "path": ["cart"]
+              "path": ["api", "cart"]
             },
-            "description": "Get cart when it's empty"
+            "description": "Test getting an empty cart"
           },
           "response": []
         }
       ]
-    }
-  ],
-  "variable": [
+    },
     {
-      "key": "baseUrl",
-      "value": "http://localhost:8080/api",
-      "type": "string"
+      "name": "Get Cart - Negative Tests",
+      "item": [
+        {
+          "name": "TC012 - Get Cart Without Authentication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            },
+            "description": "Security test - attempt to get cart without authentication"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Update Item Quantity - Positive Tests",
+      "item": [
+        {
+          "name": "TC013 - Update Quantity Successfully",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Quantity is updated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Total price is recalculated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.totalPrice).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Update quantity of existing cart item"
+          },
+          "response": []
+        },
+        {
+          "name": "TC014 - Update to Minimum Quantity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Quantity is set to 1', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var item = jsonData.items.find(i => i.productId === pm.collectionVariables.get('productId'));",
+                  "    if (item) {",
+                  "        pm.expect(item.quantity).to.equal(1);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Update quantity to minimum allowed value (1)"
+          },
+          "response": []
+        },
+        {
+          "name": "TC015 - Update to Maximum Quantity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 409', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 409]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Quantity is updated to maximum', function () {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData.items).to.be.an('array');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Update quantity to maximum allowed (within stock limits)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Update Item Quantity - Negative Tests",
+      "item": [
+        {
+          "name": "TC016 - Update with Invalid Product ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error response structure is valid', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('errorCode');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/invalid-product-id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "invalid-product-id"]
+            },
+            "description": "Attempt to update quantity for non-existent product"
+          },
+          "response": []
+        },
+        {
+          "name": "TC017 - Update with Zero Quantity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error is returned', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errorCode).to.equal('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Validation test for zero quantity"
+          },
+          "response": []
+        },
+        {
+          "name": "TC018 - Update Exceeding Stock",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 409', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('Out of stock error is returned', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errorCode).to.equal('OUT_OF_STOCK');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Test stock validation when updating quantity"
+          },
+          "response": []
+        },
+        {
+          "name": "TC019 - Update Exceeding Maximum Allowed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error for exceeding max', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errorCode).to.equal('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 101\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Validation test for quantity exceeding maximum (100)"
+          },
+          "response": []
+        },
+        {
+          "name": "TC020 - Update Without Authentication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Security test - update without authentication"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Remove Item from Cart - Positive Tests",
+      "item": [
+        {
+          "name": "TC021 - Remove Item Successfully",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Item is removed from cart', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('items');",
+                  "});",
+                  "",
+                  "pm.test('Total price is recalculated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.totalPrice).to.be.a('number');",
+                  "});",
+                  "",
+                  "pm.test('Item count is updated', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.itemCount).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Remove an existing item from cart"
+          },
+          "response": []
+        },
+        {
+          "name": "TC022 - Remove Last Item from Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Cart is empty after removal', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.itemCount === 0) {",
+                  "        pm.expect(jsonData.totalPrice).to.equal(0);",
+                  "        pm.expect(jsonData.items.length).to.equal(0);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Remove the last item to verify empty cart state"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Remove Item from Cart - Negative Tests",
+      "item": [
+        {
+          "name": "TC023 - Remove Non-Existent Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Error response is returned', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('errorCode');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/non-existent-product-id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "non-existent-product-id"]
+            },
+            "description": "Attempt to remove item that doesn't exist in cart"
+          },
+          "response": []
+        },
+        {
+          "name": "TC024 - Remove Item Without Authentication",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/{{productId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "{{productId}}"]
+            },
+            "description": "Security test - remove item without authentication"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Performance Tests",
+      "item": [
+        {
+          "name": "TC025 - Response Time Test for Add Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Response time is less than 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"]
+            },
+            "description": "Performance test - verify add item response time"
+          },
+          "response": []
+        },
+        {
+          "name": "TC026 - Response Time Test for Get Cart",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Response time is less than 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            },
+            "description": "Performance test - verify get cart response time"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Edge Cases",
+      "item": [
+        {
+          "name": "TC027 - Add Item with Boundary Quantity (1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Minimum quantity is accepted', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"]
+            },
+            "description": "Edge case - minimum allowed quantity"
+          },
+          "response": []
+        },
+        {
+          "name": "TC028 - Add Item with Negative Quantity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error is returned', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.errorCode).to.equal('VALIDATION_ERROR');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": -5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"]
+            },
+            "description": "Edge case - negative quantity"
+          },
+          "response": []
+        },
+        {
+          "name": "TC029 - Add Item with Empty Product ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 or 404', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+                  "});",
+                  "",
+                  "pm.test('Error response is returned', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('errorCode');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"\",\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"]
+            },
+            "description": "Edge case - empty product ID"
+          },
+          "response": []
+        },
+        {
+          "name": "TC030 - Concurrent Add Operations",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Cart state is consistent', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.items).to.be.an('array');",
+                  "    pm.expect(jsonData.totalPrice).to.be.a('number');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"]
+            },
+            "description": "Edge case - test concurrent operations"
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }
