@@ -1,0 +1,339 @@
+openapi: 3.0.3
+info:
+  title: bank5 API
+  version: 1.0.0
+  description: Generated from LLD batch - Shopping Cart API for SCRUM-11692
+  contact:
+    name: API Support
+    email: support@bank5.com
+servers:
+  - url: https://api.bank5.com
+    description: Production server
+  - url: https://staging-api.bank5.com
+    description: Staging server
+tags:
+  - name: Cart
+    description: Shopping cart operations
+paths:
+  /api/cart/add:
+    post:
+      tags:
+        - Cart
+      summary: Add item to cart
+      description: Adds a product to the shopping cart. If the product already exists in the cart, increments the quantity.
+      operationId: SCRUM-11692_addItemToCart_post
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItemAddRequest'
+      responses:
+        '200':
+          description: Item successfully added to cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - product out of stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/cart:
+    get:
+      tags:
+        - Cart
+      summary: Get cart
+      description: Retrieves the current user's shopping cart with all items and total price
+      operationId: SCRUM-11692_getCart_get
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cart retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cart not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/cart/{productId}:
+    delete:
+      tags:
+        - Cart
+      summary: Remove item from cart
+      description: Removes a specific product from the shopping cart
+      operationId: SCRUM-11692_removeItemFromCart_delete
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product to remove
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Item successfully removed from cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found in cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - Cart
+      summary: Update item quantity
+      description: Updates the quantity of a specific product in the shopping cart
+      operationId: SCRUM-11692_updateItemQuantity_put
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product to update
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItemUpdateRequest'
+      responses:
+        '200':
+          description: Item quantity successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartResponse'
+        '400':
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found in cart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - requested quantity exceeds available stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token-based authentication
+  schemas:
+    CartItemAddRequest:
+      type: object
+      required:
+        - productId
+        - quantity
+      properties:
+        productId:
+          type: string
+          format: uuid
+          description: Unique identifier of the product to add
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Quantity of the product to add
+          example: 2
+    CartItemUpdateRequest:
+      type: object
+      required:
+        - quantity
+      properties:
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: New quantity for the product
+          example: 5
+    CartResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the cart
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        userId:
+          type: string
+          format: uuid
+          description: Unique identifier of the user who owns the cart
+          example: "789e0123-e89b-12d3-a456-426614174999"
+        items:
+          type: array
+          description: List of items in the cart
+          items:
+            $ref: '#/components/schemas/CartItem'
+        totalPrice:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Total price of all items in the cart
+          example: 299.98
+        itemCount:
+          type: integer
+          minimum: 0
+          description: Total number of items in the cart
+          example: 3
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier of the cart item
+          example: "456e7890-e89b-12d3-a456-426614174111"
+        productId:
+          type: string
+          format: uuid
+          description: Unique identifier of the product
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        productName:
+          type: string
+          description: Name of the product
+          example: "Wireless Mouse"
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Price per unit of the product
+          example: 49.99
+        quantity:
+          type: integer
+          minimum: 1
+          description: Quantity of the product in the cart
+          example: 2
+        subtotal:
+          type: number
+          format: decimal
+          minimum: 0
+          description: Subtotal for this cart item (price * quantity)
+          example: 99.98
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the error occurred
+          example: "2024-01-15T10:30:00Z"
+        traceId:
+          type: string
+          description: Unique trace identifier for debugging
+          example: "abc123-def456-ghi789"
+        errorCode:
+          type: string
+          description: Application-specific error code
+          example: "PRODUCT_NOT_FOUND"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Product not found"
+        details:
+          type: array
+          description: Additional error details
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Field name that caused the error
+          example: "productId"
+        issue:
+          type: string
+          description: Description of the issue
+          example: "Product with given ID does not exist"
