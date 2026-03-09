@@ -1,0 +1,1 @@
+{"attempt":1,"status":"failure","error_type":"workflow_not_found","error_message":"Workflow file .github/workflows/build.yml not found","root_cause":"Missing build.yml workflow configuration","fix_applied":"BuildWorkflowTool triggered to create workflow","repo":"bank5","branch":"main","timestamp":"2025-01-22T00:00:00Z"}
